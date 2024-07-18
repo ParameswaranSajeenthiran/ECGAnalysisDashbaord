@@ -16,6 +16,13 @@ class Preprocess(Page):
         filtered_data = filtfilt(b, a, data)
         return filtered_data
 
+    ## high pass filter
+    def highpass_filter(self,data, cutoff, fs, order=5):
+        nyquist = 0.5 * fs
+        normal_cutoff = cutoff / nyquist
+        b, a = butter(order, normal_cutoff, btype='high', analog=False)
+        filtered_data = filtfilt(b, a, data)
+        return filtered_data
     def lowpass_filter(self,data, cutoff, fs, order=5):
         nyquist = 0.5 * fs
         normal_cutoff = cutoff / nyquist
@@ -43,7 +50,7 @@ class Preprocess(Page):
         # st.sidebar.header("Mapping Demo")
         # st.write(self.data['record'])
 
-        last_rows = self.data["record"].p_signal[:5000, 0]
+        last_rows = self.data["record"].p_signal[:4096, self.data["channel"]]
         with main_col1:
             filtered_placeholder = st.empty()
 
@@ -51,7 +58,7 @@ class Preprocess(Page):
             # st.write( self.data["record"].p_signal.shape)
 
             fs = 360
-            t = np.linspace(0, 5000/360, 5000)  # Time vector of 1 second
+            t = np.linspace(0, 4096/360, 4096)  # Time vector of 1 second
             # print(t)
             # print(len(ecg_signal))
             power_line_frequency = 50  # Power line frequency (Hz)
@@ -61,7 +68,7 @@ class Preprocess(Page):
             filtered_placeholder.line_chart(last_rows)
         with main_col2:
             options = st.multiselect(
-                "Select Processing" , ["Normalization", "Baseline Removal", "LowPassFilter", "Notch Filter"],
+                "Select Processing" , ["Normalization", "Baseline Removal", "LowPassFilter", "Notch Filter" ,"HighPassFilter"],
                 ["Normalization", "Baseline Removal", "LowPassFilter", "Notch Filter"]
             )
             # st.markdown("---")
@@ -73,8 +80,18 @@ class Preprocess(Page):
                     "Select a band of Frequncy Hz ",
                     0, 100, 25)
                 st.write("Frequency band: 0", values)
-                last_rows = self.lowpass_filter(self.data["record"].p_signal[:5000, 0], cutoff=values, fs=360)
+                last_rows = self.lowpass_filter(self.data["record"].p_signal[:4096, self.data["channel"]], cutoff=values, fs=360)
 
+            if "HighPassFilter" in options:
+                st.markdown('<p style="font-size:20px;font-weight:bold;">High Pass Filter</p>',
+                            unsafe_allow_html=True)
+                # st.write("Low Pass Filter")
+                high_pass = st.slider(
+                    "Select a band of Frequency Hz ",
+                    100, 1000, 25)
+                st.write("Frequency band: 0", values)
+                last_rows = self.highpass_filter(self.data["record"].p_signal[:4096, self.data["channel"]],
+                                                cutoff=high_pass, fs=360)
 
                 # You can call any Streamlit command, including custom components:
                 # st.bar_chart(np.random.randn(50, 3))
@@ -86,14 +103,14 @@ class Preprocess(Page):
                 # st.write("Notch  Filter")
 
                 number = st.number_input("Set Notch frequency" ,50)
-                print(number)
+                # print(number)
 
                 last_rows = self.notch_filter(last_rows, cutoff=int(number), fs=360)
 
 
             if "Normalization" in options:
                 # st.sidebar.progress(0)
-                print("Normalization")
+                # print("Normalization")
                 scaler = MinMaxScaler()
                 last_rows = scaler.fit_transform(last_rows.reshape(-1, 1))
                 # st.write("This is inside the container")
@@ -111,5 +128,7 @@ class Preprocess(Page):
         # def update_filtered_plot(lowcut, highcut):
         #     filtered_signal = apply_bandpass_filter(signal_data, lowcut, highcut, fs)
         #     filtered_placeholder.line_chart(filtered_signal, use_container_width=True)
+
+
 
 
