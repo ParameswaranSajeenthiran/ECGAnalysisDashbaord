@@ -156,18 +156,23 @@ class DescriptiveAnalysis(Page):
                         pq_intervals.append(info['ECG_Q_Peaks'][i] - info['ECG_P_Peaks'][i])
                 if pq_intervals:
                     average_pq_interval = np.mean(pq_intervals)
-                    st.metric(label="Average PQ Interval (ms)", value=f"{average_pq_interval:.2f}")
+                    st.metric(label="Average PQ Interval (ms)", value=f"{average_pq_interval/360*1000:.2f}")
                 else:
                     st.warning("Not enough data to calculate PQ interval.")
 
             # Q-R-S
-            if num_beats > 1:
-                    qrs_intervals = np.diff(info['ECG_R_Peaks'])
+            if 'ECG_S_Peaks' in info and 'ECG_Q_Peaks' in info:
+                qrs_intervals = []
+                for i in range(min(len(info['ECG_S_Peaks']), len(info['ECG_Q_Peaks']))):
+                    if info['ECG_S_Peaks'][i] > info['ECG_Q_Peaks'][i]:
+                        qrs_intervals.append(info['ECG_S_Peaks'][i] - info['ECG_Q_Peaks'][i])
+                if  qrs_intervals:
                     average_qrs_interval = np.mean(qrs_intervals)
-                    st.metric(label="Average QRS Interval (ms)", value=f"{average_qrs_interval:.2f}")
-            else:
+                    st.metric(label="Average QRS Interval (ms)", value=f"{average_qrs_interval/360*1000:.2f}")
+                else:
                     st.warning("Not enough data to calculate QRS interval.")
 
+        
 
             #S-T
             if 'ECG_S_Peaks' in info and 'ECG_T_Peaks' in info:
@@ -177,7 +182,7 @@ class DescriptiveAnalysis(Page):
                         st_intervals.append(info['ECG_T_Peaks'][i] - info['ECG_S_Peaks'][i])
                 if st_intervals:
                     average_st_interval = np.mean(st_intervals)
-                    st.metric(label="Average ST Interval (ms)", value=f"{average_st_interval:.2f}")
+                    st.metric(label="Average ST Interval (ms)", value=f"{average_st_interval/360*1000:.2f}")
                 else:
                     st.warning("Not enough data to calculate ST interval.")
 
