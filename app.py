@@ -48,7 +48,7 @@ with tab1:
     """)
 
     # File uploader
-    uploaded_files = st.file_uploader("Choose ECG data files", type=["dat", "hea"], accept_multiple_files=True)
+    uploaded_files = st.file_uploader("Choose ECG data files", type=["dat", "hea" ,"xyz"], accept_multiple_files=True)
 
     if uploaded_files:
         for uploaded_file in uploaded_files:
@@ -111,7 +111,7 @@ with tab1:
     st.table(df1)
 
 with tab2:
-    if record is None:
+    if record is None or st.session_state.saved_signals == []:
         st.error("Please upload a record first.")
     else:
 
