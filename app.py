@@ -12,7 +12,7 @@ from page.Myocardial_Infarction import CNN_LSTM, load_model, predict, encoder,My
 from streamlit_extras.metric_cards import style_metric_cards
 
 st.set_page_config(layout="wide")
-tab1, tab2, tab3 ,tab4,tab5= st.tabs(["📈 Preprocessing", "🗃 Descriptive Analysis", "📊Arrhythmia Detection","📊Mycardioc Infarction Detection", "📊Person Identification"])
+tab1, tab2, tab3 ,tab4,tab5= st.tabs(["📈 ECG Purifier", "🗃 ECG Insights & Analysis", "📊Arrhythmia Detection","📊Mycardioc Infarction Detection", "📊Person Identification"])
 record = None
 # Initialize saved_signals in session state if not already present
 if 'saved_signals' not in st.session_state:
